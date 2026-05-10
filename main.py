@@ -1,9 +1,4 @@
-"""Executable entry point for the Snake game."""
-
-
-def main() -> None:
-    print("Hello, snake")
-
+from snake.ui.app import run
 
 if __name__ == "__main__":
-    main()
+    run()
