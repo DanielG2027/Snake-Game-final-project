@@ -4,6 +4,7 @@ import pygame
 
 from snake import config
 from snake.core.game import Game
+from snake.db import ScoresRepo
 from snake.ui.renderer import Renderer
 from snake.ui.screens.game_over import GameOverScreen
 from snake.ui.screens.menu import MenuScreen
@@ -24,6 +25,10 @@ def run() -> None:
             self.renderer = renderer
             self.screen = screen
             self.session_best = 0
+            self.scores = ScoresRepo(config.runtime_path(config.SCORES_DB_NAME))
+
+        def high_score(self) -> int:
+            return max(self.session_best, self.scores.best_score())
 
         def start_game(self) -> None:
             self.screen = PlayScreen(self, Game())
@@ -35,6 +40,8 @@ def run() -> None:
             self.screen = PauseScreen(self, play)
 
         def show_game_over(self, score: int) -> None:
+            self.session_best = max(self.session_best, score)
+            self.scores.add_score(score)
             self.screen = GameOverScreen(self, score)
 
         def quit(self) -> None:

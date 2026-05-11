@@ -48,7 +48,9 @@ class ScoresRepo:
                 "SELECT score, created_at FROM scores ORDER BY score DESC, id DESC LIMIT ?",
                 (n,),
             ).fetchall()
-        return [ScoreRow(score=int(score), created_at=str(created_at)) for score, created_at in rows]
+        return [
+            ScoreRow(score=int(score), created_at=str(created_at)) for score, created_at in rows
+        ]
 
     def best_score(self) -> int:
         self.init_db()
@@ -57,3 +59,11 @@ class ScoresRepo:
         value = row[0] if row else None
         return int(value) if value is not None else 0
 
+    def qualifies(self, score: int, *, n: int = 10) -> bool:
+        if score < 0:
+            raise ValueError("score must be >= 0")
+        self.init_db()
+        rows = self.top_n(n)
+        if len(rows) < n:
+            return True
+        return score >= rows[-1].score

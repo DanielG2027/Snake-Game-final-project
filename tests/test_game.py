@@ -55,3 +55,40 @@ def test_pause_stops_steps_until_resume() -> None:
     game.resume()
     game.step()
     assert game.snake.body != body_before
+
+
+def test_is_game_over_flag() -> None:
+    game = Game()
+    assert game.is_game_over is False
+
+    game.snake = Snake(body=[(19, 10), (18, 10), (17, 10)])
+    game.step()
+
+    assert game.is_game_over is True
+
+
+def test_pause_blocks_direction_changes() -> None:
+    game = Game()
+    game.pause()
+    ok = game.change_direction(Direction.DOWN)
+
+    assert ok is False
+    body_before = list(game.snake.body)
+    game.step()
+    assert game.snake.body == body_before
+
+
+def test_reset_clears_score_and_live_state() -> None:
+    game = Game(rng=random.Random(0))
+    game.food = Food((11, 10))
+    game.step()
+    score_after = game.score
+    length_after = len(game.snake.body)
+
+    game.reset()
+
+    assert game.score == 0
+    assert game.state == GameState.PLAYING
+    assert len(game.snake.body) == 3
+    assert score_after > 0
+    assert length_after > len(game.snake.body)

@@ -10,6 +10,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = [
     "pytest>=8",
+    "pytest-cov>=6",
     "ruff>=0.4",
     "pyinstaller>=6",
 ]
@@ -17,6 +18,12 @@ dev = [
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+addopts = [
+    "--cov=snake.core",
+    "--cov=snake.db",
+    "--cov-report=term-missing",
+    "--cov-fail-under=80",
+]
 
 [tool.ruff]
 line-length = 100

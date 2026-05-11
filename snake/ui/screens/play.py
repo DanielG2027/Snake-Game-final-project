@@ -31,11 +31,10 @@ class PlayScreen(Screen):
             self.accumulator -= LOGIC_STEP_SECONDS
             result = self.game.step()
             if result.game_over:
-                self.app.session_best = max(self.app.session_best, self.game.score)
                 self.app.show_game_over(self.game.score)
                 return
 
     def draw(self, surface: pygame.Surface) -> None:
-        high = max(self.app.session_best, self.game.score)
+        high = max(self.app.high_score(), self.game.score)
         self.app.renderer.draw_play(surface, self.game, high)
 
