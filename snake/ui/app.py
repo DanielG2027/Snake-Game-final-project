@@ -18,14 +18,13 @@ def run() -> None:
     pygame.display.set_caption(config.TITLE)
     clock = pygame.time.Clock()
     renderer = Renderer()
-    screen = MenuScreen(None)
 
     class App:
         def __init__(self) -> None:
             self.renderer = renderer
-            self.screen = screen
             self.session_best = 0
             self.scores = ScoresRepo(config.runtime_path(config.SCORES_DB_NAME))
+            self.screen = MenuScreen(self)
 
         def high_score(self) -> int:
             return max(self.session_best, self.scores.best_score())
@@ -50,7 +49,6 @@ def run() -> None:
 
     running = True
     app = App()
-    app.screen = MenuScreen(app)
 
     while running:
         dt = clock.tick(config.RENDER_FPS) / 1000
