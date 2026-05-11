@@ -4,12 +4,37 @@ import pygame
 
 from snake import config
 from snake.core.food import Food
+from snake.core.game import Game
 from snake.core.snake import Cell
 
 
 class Renderer:
     def __init__(self) -> None:
+        self.title_font = pygame.font.Font(None, 72)
+        self.large_font = pygame.font.Font(None, 48)
+        self.font = pygame.font.Font(None, 32)
         self.small_font = pygame.font.Font(None, 24)
+
+    def draw_text(
+        self,
+        surface: pygame.Surface,
+        text: str,
+        pos: tuple[int, int],
+        font: pygame.font.Font,
+        color: tuple[int, int, int] = config.TEXT_COLOR,
+        align: str = "center",
+    ) -> None:
+        img = font.render(text, True, color)
+        rect = img.get_rect()
+        setattr(rect, align, pos)
+        surface.blit(img, rect)
+
+    def draw_play(self, surface: pygame.Surface, game: Game, high_score: int) -> None:
+        self.draw_board(surface)
+        if game.food is not None:
+            self.draw_food(surface, game.food)
+        self.draw_snake(surface, game.snake.body)
+        self.draw_hud(surface, game.score, max(high_score, game.score))
 
     def draw_board(self, surface: pygame.Surface) -> None:
         surface.fill(config.BACKGROUND_COLOR)
@@ -30,9 +55,21 @@ class Renderer:
         rect = _cell_rect(food.position).inflate(-8, -8)
         pygame.draw.ellipse(surface, config.FOOD_COLOR, rect)
 
-    def draw_score(self, surface: pygame.Surface, score: int) -> None:
-        img = self.small_font.render(f"Score: {score}", True, config.TEXT_COLOR)
-        surface.blit(img, (16, 12))
+    def draw_hud(self, surface: pygame.Surface, score: int, high_score: int) -> None:
+        self.draw_text(
+            surface,
+            f"Score: {score}",
+            (16, 12),
+            self.small_font,
+            align="topleft",
+        )
+        self.draw_text(
+            surface,
+            f"High: {high_score}",
+            (config.WINDOW_SIZE - 16, 12),
+            self.small_font,
+            align="topright",
+        )
 
 
 def _cell_rect(cell: Cell) -> pygame.Rect:

@@ -3,20 +3,12 @@ from __future__ import annotations
 import pygame
 
 from snake import config
-from snake.core.enums import Direction
 from snake.core.game import Game
 from snake.ui.renderer import Renderer
-
-KEY_DIRECTIONS = {
-    pygame.K_UP: Direction.UP,
-    pygame.K_w: Direction.UP,
-    pygame.K_DOWN: Direction.DOWN,
-    pygame.K_s: Direction.DOWN,
-    pygame.K_LEFT: Direction.LEFT,
-    pygame.K_a: Direction.LEFT,
-    pygame.K_RIGHT: Direction.RIGHT,
-    pygame.K_d: Direction.RIGHT,
-}
+from snake.ui.screens.game_over import GameOverScreen
+from snake.ui.screens.menu import MenuScreen
+from snake.ui.screens.pause import PauseScreen
+from snake.ui.screens.play import PlayScreen
 
 
 def run() -> None:
@@ -25,33 +17,44 @@ def run() -> None:
     pygame.display.set_caption(config.TITLE)
     clock = pygame.time.Clock()
     renderer = Renderer()
-    game = Game()
-    accumulator = 0.0
+    screen = MenuScreen(None)
+
+    class App:
+        def __init__(self) -> None:
+            self.renderer = renderer
+            self.screen = screen
+            self.session_best = 0
+
+        def start_game(self) -> None:
+            self.screen = PlayScreen(self, Game())
+
+        def show_menu(self) -> None:
+            self.screen = MenuScreen(self)
+
+        def show_pause(self, play: PlayScreen) -> None:
+            self.screen = PauseScreen(self, play)
+
+        def show_game_over(self, score: int) -> None:
+            self.screen = GameOverScreen(self, score)
+
+        def quit(self) -> None:
+            nonlocal running
+            running = False
+
     running = True
+    app = App()
+    app.screen = MenuScreen(app)
 
     while running:
         dt = clock.tick(config.RENDER_FPS) / 1000
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_ESCAPE:
-                    running = False
-                else:
-                    direction = KEY_DIRECTIONS.get(event.key)
-                    if direction is not None:
-                        game.change_direction(direction)
+            else:
+                app.screen.handle_event(event)
 
-        accumulator += dt
-        while accumulator >= config.LOGIC_STEP_SECONDS and not game.is_game_over:
-            accumulator -= config.LOGIC_STEP_SECONDS
-            game.step()
-
-        renderer.draw_board(surface)
-        if game.food is not None:
-            renderer.draw_food(surface, game.food)
-        renderer.draw_snake(surface, game.snake.body)
-        renderer.draw_score(surface, game.score)
+        app.screen.update(dt)
+        app.screen.draw(surface)
         pygame.display.flip()
 
     pygame.quit()
