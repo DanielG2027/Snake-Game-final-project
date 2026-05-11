@@ -43,7 +43,7 @@ def run() -> None:
                         game.change_direction(direction)
 
         accumulator += dt
-        while accumulator >= config.LOGIC_STEP_SECONDS:
+        while accumulator >= config.LOGIC_STEP_SECONDS and not game.is_game_over:
             accumulator -= config.LOGIC_STEP_SECONDS
             game.step()
 
